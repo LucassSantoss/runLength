@@ -19,9 +19,51 @@ void main(int qtdArgumentos, char *argumentos[])
 
   // Teste para copiar arquivo de entrada no arquivo de saída
   char caracter;
+  char proxCaracter;
+  char repetido;
+  char qtd;
+  char qtdVetor[2];
+  int int_qtd;
   while ((caracter = fgetc(arqEntrada)) != EOF) // EOF -> end of file
   {
-    fputc(caracter, arqSaida);
+    if (caracter == '@')
+    {
+      // Verifica se tem algum @ com números repetidos
+      fgetc(arqEntrada);
+      repetido = fgetc(arqEntrada);
+      proxCaracter = fgetc(arqEntrada);
+      qtd = fgetc(arqEntrada);
+
+      // Verifica se a quantidade de números repetidos tem 2 dígitos (para podermos usar o atoi, precisamos de uma string)
+      if ((qtdVetor[1] = fgetc(arqEntrada)) != ' ')
+      {
+        // Se for de 2 dígitos, atríbuimos os dígitos a esse vetor
+        qtdVetor[0] = qtd;
+      }
+      else
+      {
+        // Se for de 1 dígito, atríbuimos um 0 antes do primeiro número, para se tornar uma string (mais de um caracter)
+        qtdVetor[0] = '0';
+        qtdVetor[1] = qtd;
+      }
+      int_qtd = atoi(qtdVetor);
+      printf("Quantidade = %d, letra = %c\n", int_qtd, repetido);
+      for (int i = 0; i < int_qtd; i++)
+      {
+        fputc(repetido, arqSaida);
+        fputc(proxCaracter, arqSaida);
+        /////////// falta resolver esse espaço
+        if (proxCaracter != ' ')
+        {
+          if (i < int_qtd - 1)
+            fputc(' ', arqSaida);
+        }
+      }
+    }
+    else
+    {
+      fputc(caracter, arqSaida);
+    }
   }
 
   fclose(arqEntrada);
