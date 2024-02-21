@@ -8,7 +8,6 @@ void main(int qtdArgumentos, char *argumentos[])
   if (qtdArgumentos != 3) // nome do programa, arquivo de entrada, arquivo de saída
     printf("Para usar o programa, use: %s arquivo_entrada arquivo_saída\n", argumentos[0]);
 
-  // Declarando variáveis dos arquivos
   FILE *arqEntrada = fopen(argumentos[1], "r"); // abre apenas para leitura
   FILE *arqSaida = fopen(argumentos[2], "w");   // abre para escrita
 
