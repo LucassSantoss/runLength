@@ -17,4 +17,14 @@ void main(int qtdArgumentos, char *nomeArquivos[])
 
   if (arqSaida == NULL)
     printf("Erro ao abrir o arquivo de saída.\n");
+
+  // Teste para copiar arquivo de entrada no arquivo de saída
+  char caracter;
+  while ((caracter = fgetc(arqEntrada)) != EOF)
+  {
+    fputc(caracter, arqSaida);
+  }
+
+  fclose(arqEntrada);
+  fclose(arqSaida);
 }
