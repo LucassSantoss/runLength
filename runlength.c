@@ -52,7 +52,6 @@ void main(int qtdArgumentos, char *argumentos[])
       {
         fputc(repetido, arqSaida);
         fputc(proxCaracter, arqSaida);
-        /////////// falta resolver esse espaço
         if (proxCaracter != ' ')
         {
           if (i < int_qtd - 1)
