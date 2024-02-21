@@ -6,7 +6,7 @@ void main(int qtdArgumentos, char *argumentos[])
 {
   setlocale(LC_ALL, "Portuguese");
   if (qtdArgumentos != 3) // nome do programa, arquivo de entrada, arquivo de saída
-    printf("Para usar o programa, use: ./%s arquivo_entrada arquivo_saída\n", argumentos[0]);
+    printf("Para usar o programa, use: %s arquivo_entrada arquivo_saída\n", argumentos[0]);
 
   // Declarando variáveis dos arquivos
   FILE *arqEntrada = fopen(argumentos[1], "r"); // abre apenas para leitura
@@ -20,7 +20,7 @@ void main(int qtdArgumentos, char *argumentos[])
 
   // Teste para copiar arquivo de entrada no arquivo de saída
   char caracter;
-  while ((caracter = fgetc(arqEntrada)) != EOF)
+  while ((caracter = fgetc(arqEntrada)) != EOF) // EOF -> end of file
   {
     fputc(caracter, arqSaida);
   }
