@@ -17,7 +17,6 @@ void main(int qtdArgumentos, char *argumentos[])
   if (arqSaida == NULL)
     printf("Erro ao abrir o arquivo de saída.\n");
 
-  // Teste para copiar arquivo de entrada no arquivo de saída
   char caracter;
   char proxCaracter;
   char repetido;
