@@ -1,69 +1,53 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <locale.h>
+#include <string.h>
 
-void main(int qtdArgumentos, char *argumentos[])
-{
-  setlocale(LC_ALL, "Portuguese");
-  if (qtdArgumentos != 3) // nome do programa, arquivo de entrada, arquivo de saída
-    printf("Para usar o programa, use: %s arquivo_entrada arquivo_saída\n", argumentos[0]);
+FILE* openFile(const char *filename, const char *mode);
 
-  FILE *arqEntrada = fopen(argumentos[1], "r"); // abre apenas para leitura
-  FILE *arqSaida = fopen(argumentos[2], "w");   // abre para escrita
+void pgmToPgmc(char *input_file, char *output_file);
 
-  if (arqEntrada == NULL)
-    printf("Erro ao abrir o arquivo de entrada.\n");
+void pgmcToPgm(char *input_file, char *output_file);
 
-  if (arqSaida == NULL)
-    printf("Erro ao abrir o arquivo de saída.\n");
-
-  char caracter;
-  char proxCaracter;
-  char repetido;
-  char qtd;
-  char qtdVetor[2];
-  int int_qtd;
-  while ((caracter = fgetc(arqEntrada)) != EOF) // EOF -> end of file
-  {
-    if (caracter == '@')
-    {
-      // Verifica se tem algum @ com números repetidos
-      fgetc(arqEntrada);
-      repetido = fgetc(arqEntrada);
-      proxCaracter = fgetc(arqEntrada);
-      qtd = fgetc(arqEntrada);
-
-      // Verifica se a quantidade de números repetidos tem 2 dígitos (para podermos usar o atoi, precisamos de uma string)
-      if ((qtdVetor[1] = fgetc(arqEntrada)) != ' ')
-      {
-        // Se for de 2 dígitos, atríbuimos os dígitos a esse vetor
-        qtdVetor[0] = qtd;
-      }
-      else
-      {
-        // Se for de 1 dígito, atríbuimos um 0 antes do primeiro número, para se tornar uma string (mais de um caracter)
-        qtdVetor[0] = '0';
-        qtdVetor[1] = qtd;
-      }
-      int_qtd = atoi(qtdVetor);
-      printf("Quantidade = %d, letra = %c\n", int_qtd, repetido);
-      for (int i = 0; i < int_qtd; i++)
-      {
-        fputc(repetido, arqSaida);
-        fputc(proxCaracter, arqSaida);
-        if (proxCaracter != ' ')
-        {
-          if (i < int_qtd - 1)
-            fputc(' ', arqSaida);
-        }
-      }
+int main(int argc, char *argv[]){
+    if (argc < 3) {
+        printf("Usage: %s <input_file> <output_file>\n", argv[0]);
+        exit(EXIT_FAILURE);
     }
-    else
-    {
-      fputc(caracter, arqSaida);
-    }
-  }
 
-  fclose(arqEntrada);
-  fclose(arqSaida);
+    char *input_file = argv[1];
+    char *output_file = argv[2];
+    
+    FILE *ptr_input = openFile(input_file, "r");
+    FILE *ptr_output = openFile(output_file, "w+");
+
+    char input_type[4]; // 2 caracteres + \n
+    fscanf(ptr_input, "%s", input_type);
+    printf("INPUT TYPE: %s\n", input_type);
+    
+    if(strcmp(input_type, "P2") == 0){
+        pgmToPgmc(input_file, output_file);
+    }
+
+    if(strcmp(input_file, "P8") == 0){
+        pgmcToPgm(input_file, output_file);
+    }
+
+    
+}
+
+FILE* openFile(const char *filename, const char *mode) {
+    FILE *file = fopen(filename, mode);
+    if (file == NULL) {
+        printf("Can't open file: %s\n", filename);
+        exit(EXIT_FAILURE);
+    }
+    return file;
+}
+
+void pgmcToPgm(char *input_file, char *output_file){
+
+}
+
+void pgmToPgmc(char *input_file, char *output_file){
+    
 }
