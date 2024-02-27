@@ -4,9 +4,9 @@
 
 FILE* openFile(const char *filename, const char *mode);
 
-void pgmToPgmc(char *input_file, char *output_file);
+void pgmToPgmc(FILE *input_file, FILE *output_file);
 
-void pgmcToPgm(char *input_file, char *output_file);
+void pgmcToPgm(FILE *input_file, FILE *output_file);
 
 int main(int argc, char *argv[]){
     if (argc < 3) {
@@ -25,16 +25,16 @@ int main(int argc, char *argv[]){
     printf("INPUT TYPE: %s\n", input_type);
     
     if(strcmp(input_type, "P2") == 0){
-        pgmToPgmc(input_file, output_file);
+        pgmToPgmc(ptr_input, ptr_output);
     }
 
     if(strcmp(input_type, "P8") == 0){
-        pgmcToPgm(input_file, output_file);
+        pgmcToPgm(ptr_input, ptr_output);
     }
 
 }
 
-FILE* openFile(const char *filename, const char *mode) {
+FILE* openFile(const char *filename, const char *mode){
     FILE *file = fopen(filename, mode);
     if (file == NULL) {
         printf("Can't open file: %s\n", filename);
@@ -43,10 +43,34 @@ FILE* openFile(const char *filename, const char *mode) {
     return file;
 }
 
-void pgmcToPgm(char *input_file, char *output_file){
+void pgmcToPgm(FILE *input_file, FILE *output_file){
   printf("OUTPUT TYPE: P2\n");
+  // Podemos trocar essa parte das linhas e colunas por uma função para não ficar repetido 2x
+  char strColumns[3];
+  char strLines[3];
+  char whiteColor[3];
+  fscanf(input_file, "%s", strColumns);
+  fscanf(input_file, "%s", strLines);
+  fscanf(input_file, "%s", whiteColor);
+  int columns = atoi(strColumns);
+  int lines = atoi(strLines);
+  printf("Quantidade de colunas: %d\n", columns);
+  printf("Quantidade de linhas: %d\n", lines);
+  printf("Tonalidade máxima (branco): %s\n", whiteColor);
 }
 
-void pgmToPgmc(char *input_file, char *output_file){
+void pgmToPgmc(FILE *input_file, FILE *output_file){
   printf("OUTPUT TYPE: P8\n");
+  // Podemos trocar essa parte das linhas e colunas por uma função para não ficar repetido 2x
+  char strColumns[3];
+  char strLines[3];
+  char whiteColor[3];
+  fscanf(input_file, "%s", strColumns);
+  fscanf(input_file, "%s", strLines);
+  fscanf(input_file, "%s", whiteColor);
+  int columns = atoi(strColumns);
+  int lines = atoi(strLines);
+  printf("Quantidade de colunas: %d\n", columns);
+  printf("Quantidade de linhas: %d\n", lines);
+  printf("Tonalidade máxima (branco): %s\n", whiteColor);
 }
