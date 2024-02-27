@@ -20,7 +20,7 @@ int main(int argc, char *argv[]){
     FILE *ptr_input = openFile(input_file, "r");
     FILE *ptr_output = openFile(output_file, "w+");
 
-    char input_type[4]; // 2 caracteres + \n
+    char input_type[2];
     fscanf(ptr_input, "%s", input_type);
     printf("INPUT TYPE: %s\n", input_type);
     
@@ -28,11 +28,10 @@ int main(int argc, char *argv[]){
         pgmToPgmc(input_file, output_file);
     }
 
-    if(strcmp(input_file, "P8") == 0){
+    if(strcmp(input_type, "P8") == 0){
         pgmcToPgm(input_file, output_file);
     }
 
-    
 }
 
 FILE* openFile(const char *filename, const char *mode) {
@@ -45,9 +44,9 @@ FILE* openFile(const char *filename, const char *mode) {
 }
 
 void pgmcToPgm(char *input_file, char *output_file){
-
+  printf("OUTPUT TYPE: P2\n");
 }
 
 void pgmToPgmc(char *input_file, char *output_file){
-    
+  printf("OUTPUT TYPE: P8\n");
 }
