@@ -57,6 +57,9 @@ void pgmcToPgm(FILE *input_file, FILE *output_file){
   printf("Quantidade de colunas: %d\n", columns);
   printf("Quantidade de linhas: %d\n", lines);
   printf("Tonalidade máxima (branco): %s\n", whiteColor);
+  
+  //Preenchendo matriz
+  char **mat;
 }
 
 void pgmToPgmc(FILE *input_file, FILE *output_file){
@@ -73,4 +76,7 @@ void pgmToPgmc(FILE *input_file, FILE *output_file){
   printf("Quantidade de colunas: %d\n", columns);
   printf("Quantidade de linhas: %d\n", lines);
   printf("Tonalidade máxima (branco): %s\n", whiteColor);
+
+  //Preenchendo matriz
+  char **mat;
 }
