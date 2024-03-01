@@ -13,61 +13,54 @@ typedef struct {
 
 FILE* openFile(const char *filename, const char *mode);
 
-void compress(PgmFile imageStruct);
+void compress(PgmFile imageStruct, char outputName[]);
 
 void unzip(PgmFile imageStruct);
 
-void loadMatrix(PgmFile imageStruct);
+void loadMatrix(PgmFile *imageStruct);
 
 char ***alocateMatrix(int cols, int lines);
 
 PgmFile createStruct(FILE *ptrFile);
 
-// int main(int argc, char *argv[]){
-    // if (argc != 3) { 
-    //     printf("Usage: %s <inputFile> <outputFile>\n", argv[0]);
-    //     exit(EXIT_FAILURE);
-    // }
+int main(int argc, char *argv[]){
+  if (argc != 3) { 
+        printf("Usage: %s <inputFile> <outputFile>\n", argv[0]);
+        exit(EXIT_FAILURE);
+  }
 
-    // char *inputName = argv[1];
-    // char *outputName = argv[2];
-    
-    // FILE *ptrInput = openFile(inputName, "r");
-    // FILE *ptrOutput = openFile(outputName, "w+");
+  char *inputName = argv[1];
+  char *outputName = argv[2];
+  
+  FILE *inputFile = openFile(inputName, "r");
 
-int main(){
+  PgmFile imageStruct = createStruct(inputFile);
 
+  if(strcmp(imageStruct.type, "P2") == 0){
+    compress(imageStruct, outputName);
+  }
 
-      char address[] = "C:\\users\\ian\\Desktop\\exemplo1.pgm";
-      FILE *archive = openFile(address, "r"); 
-    
-      PgmFile imageStruct = createStruct(archive);
-
-    if(strcmp(imageStruct.type, "P2") == 0){
-        compress(imageStruct);
-    }
-
-    if(strcmp(imageStruct.type, "P8") == 0){
-        unzip(imageStruct);
-    }
+  if(strcmp(imageStruct.type, "P8") == 0){
+      unzip(imageStruct);
+  }
   printf("\nImageStruct tipo: %s", imageStruct.type);
   printf("\nImageStruct colunas: %d", imageStruct.cols);
   printf("\nImageStruct linhas: %d", imageStruct.lines);
-  
+  printf("\n\n");
 }
 
 FILE* openFile(const char *filename, const char *mode){
-    FILE *file = fopen(filename, mode);
-    if (file == NULL) {
-        printf("Can't open file: %s\n", filename);
-        exit(EXIT_FAILURE);
-    }
-    return file;
+  FILE *file = fopen(filename, mode);
+  if (file == NULL) {
+      printf("Can't open file: %s\n", filename);
+      exit(EXIT_FAILURE);
+  }
+  return file;
 }
 
 void unzip(PgmFile imageStruct){
   printf("OUTPUT TYPE: P2\n");
-    
+  
 }
 
 char ***alocateMatrix(int cols, int lines){
@@ -83,22 +76,16 @@ char ***alocateMatrix(int cols, int lines){
   return matrix;
 }
 
-void loadMatrix(PgmFile imageStruct){
+void loadMatrix(PgmFile *imageStruct){
 
-  imageStruct.matrix = alocateMatrix(imageStruct.cols, imageStruct.lines);
+  imageStruct->matrix = alocateMatrix(imageStruct->cols, imageStruct->lines);
   
-  for(int i = 0; i < imageStruct.lines; i ++){
-    for(int j = 0; j < imageStruct.cols; j++){
-      fscanf(imageStruct.ptrFile, "%s", imageStruct.matrix[i][j]); 
+  for(int i = 0; i < imageStruct->lines; i ++){
+    for(int j = 0; j < imageStruct->cols; j++){
+      fscanf(imageStruct->ptrFile, "%s", imageStruct->matrix[i][j]); 
     }
   }
   
-  for(int i = 0; i < imageStruct.lines; i ++){
-    printf("\n");
-    for(int j = 0; j < imageStruct.cols; j++){
-        printf("%s ", imageStruct.matrix[i][j]);
-    }
-  }
   printf("\n");
 }
 
@@ -109,15 +96,51 @@ PgmFile createStruct(FILE *ptrFile){
   fscanf(ptrFile, "%d", &imageStruct.lines);
   fscanf(ptrFile, "%d", &imageStruct.whiteColor);  
 
-  loadMatrix(imageStruct);
+  loadMatrix(&imageStruct);
 
-  printf("Quantidade de colunas: %d\n", imageStruct.cols);
-  printf("Quantidade de linhas: %d\n", imageStruct.lines);
-  printf("Tonalidade máxima (branco): %d\n", imageStruct.whiteColor);
   return imageStruct;
 }
 
-void compress(PgmFile imageStruct){
-  printf("OUTPUT TYPE: P8\n");
+void compress(PgmFile imageStruct, char outputName[]){
+  
+  FILE *outputFile = openFile(outputName, "w+"); 
+  fprintf(outputFile, "%s\n",imageStruct.type);
+  fprintf(outputFile, "%d ",imageStruct.cols);
+  fprintf(outputFile, "%d\n",imageStruct.lines);
+  fprintf(outputFile, "%d\n",imageStruct.whiteColor);
+  
+  int count = 1;
+  int cols = 1;
+  char previousValue[3];
+  strcpy(previousValue, imageStruct.matrix[0][0]);
+  printf("PREVIOUS %s MATRIX 0x0 %s", previousValue, imageStruct.matrix[0][0]);
+  for(int i = 0; i < imageStruct.lines; i ++){
+    for(int j = 1; j < imageStruct.cols; j++){
+      if(strcmp(imageStruct.matrix[i][j], previousValue) == 0){
+        count++;
+      }else{
+        if(cols >= imageStruct.cols){
+          cols = 1;
+          fprintf(outputFile, "\n");
+        }
+        if(count >= 4){
+          fprintf(outputFile, "@ %s %d ", previousValue, count);
+          count = 1;
+        }
+        else{
+          for(int i=0; i<count; i++){
+            fprintf(outputFile, "%s ", previousValue);
+          }
+          count = 1;
+        }
+        strcpy(previousValue, imageStruct.matrix[i][j]);
+      }
+      cols++;
+    }
+    if (i > 0){
+      fprintf(outputFile, "\n");
+    }
+  }
+  
+  printf("\nOUTPUT TYPE: P8\n");
 }
-
