@@ -23,11 +23,13 @@ char ***alocateMatrix(int cols, int lines);
 
 PgmFile createStruct(FILE *ptrFile);
 
+
 int main(int argc, char *argv[]){
   if (argc != 3) { 
         printf("Usage: %s <inputFile> <outputFile>\n", argv[0]);
         exit(EXIT_FAILURE);
   }
+
 
   char *inputName = argv[1];
   char *outputName = argv[2];
@@ -69,7 +71,7 @@ char ***alocateMatrix(int cols, int lines){
   for(int i = 0; i < lines; i ++){
     matrix[i] = (char **)malloc(cols * sizeof(char*));
     for(int j = 0; j < cols; j++) {
-            matrix[i][j] = (char *)malloc(4 * sizeof(char)); //cada string tem tamanho máximo de 4 caracteres
+            matrix[i][j] = (char *)malloc(4 * sizeof(char));
     }
   }
   
@@ -104,43 +106,46 @@ PgmFile createStruct(FILE *ptrFile){
 void compress(PgmFile imageStruct, char outputName[]){
   
   FILE *outputFile = openFile(outputName, "w+"); 
-  fprintf(outputFile, "%s\n",imageStruct.type);
+
+  fprintf(outputFile, "%s\n","P8");
   fprintf(outputFile, "%d ",imageStruct.cols);
   fprintf(outputFile, "%d\n",imageStruct.lines);
   fprintf(outputFile, "%d\n",imageStruct.whiteColor);
   
-  int count = 1;
-  int cols = 1;
-  char previousValue[3];
-  strcpy(previousValue, imageStruct.matrix[0][0]);
-  printf("PREVIOUS %s MATRIX 0x0 %s", previousValue, imageStruct.matrix[0][0]);
-  for(int i = 0; i < imageStruct.lines; i ++){
-    for(int j = 1; j < imageStruct.cols; j++){
-      if(strcmp(imageStruct.matrix[i][j], previousValue) == 0){
-        count++;
-      }else{
-        if(cols >= imageStruct.cols){
-          cols = 1;
-          fprintf(outputFile, "\n");
-        }
-        if(count >= 4){
-          fprintf(outputFile, "@ %s %d ", previousValue, count);
-          count = 1;
-        }
-        else{
-          for(int i=0; i<count; i++){
-            fprintf(outputFile, "%s ", previousValue);
+  char previousValue[3] = "";
+  for (int i = 0; i < imageStruct.lines; i++) {
+      strcpy(previousValue, imageStruct.matrix[i][0]);
+      int count = 1;
+      for (int j = 1; j < imageStruct.cols; j++) {
+          if (strcmp(previousValue, imageStruct.matrix[i][j]) == 0) {
+              count++;
+          } 
+          else {
+              if (count > 3) {
+                  fprintf(outputFile, "@ %s %d ", previousValue, count);
+              } else {
+                  for (int i = 0; i < count; i++) {
+                      fprintf(outputFile, "%s ", previousValue);
+                  }
+              }
+              strcpy(previousValue, imageStruct.matrix[i][j]);
+              count = 1;
           }
-          count = 1;
-        }
-        strcpy(previousValue, imageStruct.matrix[i][j]);
+
+          if (j == imageStruct.cols - 1) {
+              if (count > 3) {
+                  fprintf(outputFile, "@ %s %d ", previousValue, count);
+              } else {
+                  for (int i = 0; i < count; i++) {
+                      fprintf(outputFile, "%s ", previousValue);
+                  }
+              }
+              fprintf(outputFile, "\n");
+              count = 1;
+          }
       }
-      cols++;
-    }
-    if (i > 0){
-      fprintf(outputFile, "\n");
-    }
   }
-  
-  printf("\nOUTPUT TYPE: P8\n");
 }
+
+
+
