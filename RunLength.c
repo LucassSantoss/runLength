@@ -41,12 +41,12 @@ int main(int argc, char *argv[]) {
 
   if (strcmp(imageStruct.type, "P2") == 0) {
     compress(imageStruct, outputName);
-    printf("Converting P2 > P8");
+    printf("Converting P2 > P8\n");
   }
 
   if (strcmp(imageStruct.type, "P8") == 0) {
     decompress(imageStruct, outputName);
-    printf("Converting P8 > P2");
+    printf("Converting P8 > P2\n");
   }
 
   freeMatrix(imageStruct);
@@ -152,28 +152,33 @@ void decompress(PgmFile imageStruct, char outputName[]) {
   fprintf(outputFile, "%d ", imageStruct.cols);
   fprintf(outputFile, "%d\n", imageStruct.lines);
   fprintf(outputFile, "%d\n", imageStruct.whiteColor);
-  char previousValue[3];
+
   int cols = 0;
   int lines = 0;
   int i = 0;
-  strcpy(previousValue, imageStruct.matrix[0]);
+
   while (lines < imageStruct.lines) {
     if (strcmp(imageStruct.matrix[i], "@") == 0) {
       for (int j = 0; j < atoi(imageStruct.matrix[i + 2]); j++) {
-        fprintf(outputFile, "%s ", imageStruct.matrix[i + 1]);
+        if(cols + 1 == imageStruct.cols){
+          fprintf(outputFile, "%s", imageStruct.matrix[i + 1]);
+        }else{
+          fprintf(outputFile, "%s ", imageStruct.matrix[i + 1]);
+        }
         cols++;
       }
       i += 2;
     } else {
-      fprintf(outputFile, "%s ", imageStruct.matrix[i]);
+      if(cols + 1 == imageStruct.cols){
+        fprintf(outputFile, "%s", imageStruct.matrix[i + 1]);
+      }else{
+        fprintf(outputFile, "%s ", imageStruct.matrix[i + 1]);
+      }
       cols++;
     }
 
     if (cols == imageStruct.cols) {
       fprintf(outputFile, "\n");
-      if (lines < imageStruct.lines) {
-        strcpy(previousValue, imageStruct.matrix[i + 1]);
-      }
       cols = 0;
       lines++;
     }
@@ -185,5 +190,5 @@ void decompress(PgmFile imageStruct, char outputName[]) {
 void freeMatrix(PgmFile imageStruct){
   for (int i=0;i<imageStruct.lines;i++){
     free(imageStruct.matrix[i]);
-  }
+  }
 }
