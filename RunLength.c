@@ -25,6 +25,8 @@ char **alocateMatrix(int cols, int lines);
 
 PgmFile createStruct(FILE *ptrFile);
 
+void freeMatrix(PgmFile imageStruct);
+
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     printf("Usage: %s <inputFile> <outputFile>\n", argv[0]);
@@ -37,11 +39,6 @@ int main(int argc, char *argv[]) {
 
   PgmFile imageStruct = createStruct(inputFile);
 
-  printf("Input File:\n");
-  printf("Type: %s\n", imageStruct.type);
-  printf("Columns: %d\n", imageStruct.cols);
-  printf("Lines: %d\n\n", imageStruct.lines);
-
   if (strcmp(imageStruct.type, "P2") == 0) {
     compress(imageStruct, outputName);
     printf("Converting P2 > P8");
@@ -51,6 +48,9 @@ int main(int argc, char *argv[]) {
     decompress(imageStruct, outputName);
     printf("Converting P8 > P2");
   }
+
+  freeMatrix(imageStruct);
+  fclose(inputFile);
 }
 
 FILE *openFile(const char *filename, const char *mode) {
@@ -84,7 +84,6 @@ void loadMatrix(PgmFile *imageStruct) {
     }
     i++;
   }
-  printf("\n");
 }
 
 PgmFile createStruct(FILE *ptrFile) {
@@ -134,6 +133,7 @@ void compress(PgmFile imageStruct, char outputName[]) {
       line++;
     }
   }
+  fclose(outputFile);
 }
 
 void writeLineComp(FILE *outputFile, char *value, int count) {
@@ -156,7 +156,6 @@ void decompress(PgmFile imageStruct, char outputName[]) {
   int cols = 0;
   int lines = 0;
   int i = 0;
-  int arraySize = imageStruct.cols * imageStruct.lines;
   strcpy(previousValue, imageStruct.matrix[0]);
   while (lines < imageStruct.lines) {
     if (strcmp(imageStruct.matrix[i], "@") == 0) {
@@ -179,5 +178,12 @@ void decompress(PgmFile imageStruct, char outputName[]) {
       lines++;
     }
     i++;
+  }
+  fclose(outputFile);
+}
+
+void freeMatrix(PgmFile imageStruct){
+  for (int i=0;i<imageStruct.lines;i++){
+    free(imageStruct.matrix[i]);
   }
 }
