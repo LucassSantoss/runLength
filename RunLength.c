@@ -42,12 +42,10 @@ int main(int argc, char *argv[]) {
   if (strcmp(imageStruct.type, "P2") == 0) {
     compress(imageStruct, outputName);
     printf("Converting P2 > P8\n");
-    printf("Converting P2 > P8\n");
   }
 
   if (strcmp(imageStruct.type, "P8") == 0) {
     decompress(imageStruct, outputName);
-    printf("Converting P8 > P2\n");
     printf("Converting P8 > P2\n");
   }
 
