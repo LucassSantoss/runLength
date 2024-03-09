@@ -15,7 +15,7 @@ FILE *openFile(const char *filename, const char *mode);
 
 void compress(PgmFile imageStruct, char outputName[]);
 
-void writeLineComp(FILE *outputFile, char *value, int count);
+void writePixel(FILE *outputFile, char *value, int count);
 
 void decompress(PgmFile imageStruct, char outputName[]);
 
@@ -25,31 +25,32 @@ char **alocateMatrix(int cols, int lines);
 
 PgmFile createStruct(FILE *ptrFile);
 
-void freeMatrix(PgmFile imageStruct);
+void freeMatrix(PgmFile *imageStruct);
 
 int main(int argc, char *argv[]) {
   if (argc != 3) {
     printf("Usage: %s <inputFile> <outputFile>\n", argv[0]);
     exit(EXIT_FAILURE);
   }
+
   char *inputName = argv[1];
   char *outputName = argv[2];
-
   FILE *inputFile = openFile(inputName, "r");
+  char *inputType = strrchr(inputName, '.');
+
+  if (strcmp(inputType, ".pgm") != 0 && strcmp(inputType, ".pgmc") != 0) {
+    printf("Invalid extension!");
+    exit(EXIT_FAILURE);
+  }
 
   PgmFile imageStruct = createStruct(inputFile);
 
-  if (strcmp(imageStruct.type, "P2") == 0) {
+  if (strcmp(inputType, ".pgm") == 0) {
     compress(imageStruct, outputName);
-    printf("Converting P2 > P8\n");
   }
-
-  if (strcmp(imageStruct.type, "P8") == 0) {
+  if (strcmp(inputType, ".pgmc") == 0) {
     decompress(imageStruct, outputName);
-    printf("Converting P8 > P2\n");
   }
-
-  freeMatrix(imageStruct);
   fclose(inputFile);
 }
 
@@ -62,21 +63,21 @@ FILE *openFile(const char *filename, const char *mode) {
   return file;
 }
 
-char **alocateMatrix(int cols, int lines) {
-  char **matrix = (char **)malloc((lines * cols) * sizeof(char *));
-
-  for (int i = 0; i < lines * cols; i++) {
-    matrix[i] = (char *)malloc(4 * sizeof(char));
-  }
-  return matrix;
+PgmFile createStruct(FILE *ptrFile) {
+  PgmFile imageStruct;
+  fscanf(ptrFile, "%s", imageStruct.type);
+  fscanf(ptrFile, "%d", &imageStruct.cols);
+  fscanf(ptrFile, "%d", &imageStruct.lines);
+  fscanf(ptrFile, "%d", &imageStruct.whiteColor);
+  imageStruct.ptrFile = ptrFile;
+  loadMatrix(&imageStruct);
+  return imageStruct;
 }
 
 void loadMatrix(PgmFile *imageStruct) {
   imageStruct->matrix = alocateMatrix(imageStruct->cols, imageStruct->lines);
-
   int i = 0;
   int count = 1;
-
   while (fscanf(imageStruct->ptrFile, "%s", imageStruct->matrix[i]) != EOF) {
     count++;
     if (count == imageStruct->cols) {
@@ -86,43 +87,56 @@ void loadMatrix(PgmFile *imageStruct) {
   }
 }
 
-PgmFile createStruct(FILE *ptrFile) {
-  PgmFile imageStruct;
-  fscanf(ptrFile, "%s", imageStruct.type);
-  fscanf(ptrFile, "%d", &imageStruct.cols);
-  fscanf(ptrFile, "%d", &imageStruct.lines);
-  fscanf(ptrFile, "%d", &imageStruct.whiteColor);
-  imageStruct.ptrFile = ptrFile;
+char **alocateMatrix(int cols, int lines) {
+  char **matrix = (char **)malloc((lines * cols) * sizeof(char *));
+  if (matrix == NULL) {
+    printf("Error allocating memory to 'bufferString'.\n");
+    exit(EXIT_FAILURE);
+  }
 
-  loadMatrix(&imageStruct);
+  for (int i = 0; i < lines * cols; i++) {
+    matrix[i] = (char *)malloc(5 * sizeof(char));
+    if (matrix[i] == NULL) {
+      printf("Error allocating memory to 'bufferString'.\n");
+      exit(EXIT_FAILURE);
+    }
+  }
+  return matrix;
+}
 
-  return imageStruct;
+void freeMatrix(PgmFile *imageStruct) {
+  for (int i = 0; i < imageStruct->lines * imageStruct->cols; i++) {
+    free(imageStruct->matrix[i]);
+  }
+  free(imageStruct->matrix);
 }
 
 void compress(PgmFile imageStruct, char outputName[]) {
-  FILE *outputFile = openFile(outputName, "w+");
+  FILE *outputFile = openFile(outputName, "w");
   fprintf(outputFile, "%s\n", "P8");
   fprintf(outputFile, "%d ", imageStruct.cols);
   fprintf(outputFile, "%d\n", imageStruct.lines);
   fprintf(outputFile, "%d\n", imageStruct.whiteColor);
+
   char previousValue[3];
   int count = 1;
   int cols = 1;
   int line = 1;
   int arraySize = imageStruct.cols * imageStruct.lines;
+  
   strcpy(previousValue, imageStruct.matrix[0]);
   for (int i = 1; i < arraySize; i++) {
     if (strcmp(previousValue, imageStruct.matrix[i]) == 0) {
       count++;
     } else {
-      writeLineComp(outputFile, previousValue, count);
+      writePixel(outputFile, previousValue, count);
       strcpy(previousValue, imageStruct.matrix[i]);
       count = 1;
     }
     cols++;
 
     if (cols == imageStruct.cols) {
-      writeLineComp(outputFile, previousValue, count);
+      writePixel(outputFile, previousValue, count);
       fprintf(outputFile, "\n");
       if (line < imageStruct.lines) {
         strcpy(previousValue, imageStruct.matrix[i + 1]);
@@ -133,10 +147,9 @@ void compress(PgmFile imageStruct, char outputName[]) {
       line++;
     }
   }
-  fclose(outputFile);
 }
 
-void writeLineComp(FILE *outputFile, char *value, int count) {
+void writePixel(FILE *outputFile, char *value, int count) {
   if (count > 3) {
     fprintf(outputFile, "@ %s %d ", value, count);
   } else {
@@ -147,48 +160,38 @@ void writeLineComp(FILE *outputFile, char *value, int count) {
 }
 
 void decompress(PgmFile imageStruct, char outputName[]) {
-  FILE *outputFile = openFile(outputName, "w+");
+  FILE *outputFile = openFile(outputName, "w");
   fprintf(outputFile, "%s\n", "P2");
   fprintf(outputFile, "%d ", imageStruct.cols);
   fprintf(outputFile, "%d\n", imageStruct.lines);
   fprintf(outputFile, "%d\n", imageStruct.whiteColor);
-
+  char previousValue[3];
   int cols = 0;
   int lines = 0;
   int i = 0;
-
+  int arraySize = imageStruct.cols * imageStruct.lines;
+  strcpy(previousValue, imageStruct.matrix[0]);
   while (lines < imageStruct.lines) {
     if (strcmp(imageStruct.matrix[i], "@") == 0) {
       for (int j = 0; j < atoi(imageStruct.matrix[i + 2]); j++) {
-        if (cols + 1 == imageStruct.cols) {
-          fprintf(outputFile, "%s", imageStruct.matrix[i + 1]);
-        } else {
-          fprintf(outputFile, "%s ", imageStruct.matrix[i + 1]);
-        }
+        fprintf(outputFile, "%s ", imageStruct.matrix[i + 1]);
         cols++;
       }
       i += 2;
     } else {
-      if (cols + 1 == imageStruct.cols) {
-        fprintf(outputFile, "%s", imageStruct.matrix[i + 1]);
-      } else {
-        fprintf(outputFile, "%s ", imageStruct.matrix[i + 1]);
-      }
+      fprintf(outputFile, "%s ", imageStruct.matrix[i]);
       cols++;
     }
 
     if (cols == imageStruct.cols) {
       fprintf(outputFile, "\n");
+      if (lines < imageStruct.lines) {
+        strcpy(previousValue, imageStruct.matrix[i + 1]);
+      }
       cols = 0;
       lines++;
     }
     i++;
   }
   fclose(outputFile);
-}
-
-void freeMatrix(PgmFile imageStruct) {
-  for (int i = 0; i < imageStruct.lines; i++) {
-    free(imageStruct.matrix[i]);
-  }
 }
