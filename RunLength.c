@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+// Made by: Lucas Santos, Ian Fernandes, Bruno Mascioli de Souza 
+// Github: LucassSantoss, IofSoft, brunomascioli 
+
 typedef struct {
   int cols;
   int lines;
