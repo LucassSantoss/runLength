@@ -13,11 +13,11 @@ typedef struct {
 
 FILE *openFile(const char *filename, const char *mode);
 
-void compress(PgmFile imageStruct, char outputName[]);
+void compress(PgmFile imageStruct, FILE *outputFile);
 
 void writePixel(FILE *outputFile, char *value, int count);
 
-void decompress(PgmFile imageStruct, char outputName[]);
+void decompress(PgmFile imageStruct, FILE *outputFile);
 
 void loadMatrix(PgmFile *imageStruct);
 
@@ -36,6 +36,7 @@ int main(int argc, char *argv[]) {
   char *inputName = argv[1];
   char *outputName = argv[2];
   FILE *inputFile = openFile(inputName, "r");
+  FILE *outputFile = openFile(outputName, "w");
   char *inputType = strrchr(inputName, '.');
 
   if (strcmp(inputType, ".pgm") != 0 && strcmp(inputType, ".pgmc") != 0) {
@@ -46,12 +47,14 @@ int main(int argc, char *argv[]) {
   PgmFile imageStruct = createStruct(inputFile);
 
   if (strcmp(inputType, ".pgm") == 0) {
-    compress(imageStruct, outputName);
+    compress(imageStruct, outputFile);
   }
   if (strcmp(inputType, ".pgmc") == 0) {
-    decompress(imageStruct, outputName);
+    decompress(imageStruct, outputFile);
   }
+  
   fclose(inputFile);
+  fclose(outputFile);
 }
 
 FILE *openFile(const char *filename, const char *mode) {
@@ -111,8 +114,7 @@ void freeMatrix(PgmFile *imageStruct) {
   free(imageStruct->matrix);
 }
 
-void compress(PgmFile imageStruct, char outputName[]) {
-  FILE *outputFile = openFile(outputName, "w");
+void compress(PgmFile imageStruct, FILE *outputFile) {
   fprintf(outputFile, "%s\n", "P8");
   fprintf(outputFile, "%d ", imageStruct.cols);
   fprintf(outputFile, "%d\n", imageStruct.lines);
@@ -123,7 +125,7 @@ void compress(PgmFile imageStruct, char outputName[]) {
   int cols = 1;
   int line = 1;
   int arraySize = imageStruct.cols * imageStruct.lines;
-  
+
   strcpy(previousValue, imageStruct.matrix[0]);
   for (int i = 1; i < arraySize; i++) {
     if (strcmp(previousValue, imageStruct.matrix[i]) == 0) {
@@ -159,17 +161,18 @@ void writePixel(FILE *outputFile, char *value, int count) {
   }
 }
 
-void decompress(PgmFile imageStruct, char outputName[]) {
-  FILE *outputFile = openFile(outputName, "w");
+void decompress(PgmFile imageStruct, FILE *outputFile) {
   fprintf(outputFile, "%s\n", "P2");
   fprintf(outputFile, "%d ", imageStruct.cols);
   fprintf(outputFile, "%d\n", imageStruct.lines);
   fprintf(outputFile, "%d\n", imageStruct.whiteColor);
+
   char previousValue[3];
   int cols = 0;
   int lines = 0;
   int i = 0;
   int arraySize = imageStruct.cols * imageStruct.lines;
+  
   strcpy(previousValue, imageStruct.matrix[0]);
   while (lines < imageStruct.lines) {
     if (strcmp(imageStruct.matrix[i], "@") == 0) {
@@ -178,6 +181,7 @@ void decompress(PgmFile imageStruct, char outputName[]) {
         cols++;
       }
       i += 2;
+      
     } else {
       fprintf(outputFile, "%s ", imageStruct.matrix[i]);
       cols++;
